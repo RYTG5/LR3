@@ -10,115 +10,7 @@ from HandleDirection import HandleDirection
 from HandleProperties import HandleProperties
 from HandleService import HandleService
 
-def check_allplan_version(buildEl, version):
-    del buildEl
-    del version
-    return True
-
-
-def create_element(buildEl, doc):
-    element = CreateBridgeBeam(doc)
-    return element.create(buildEl)
-
-def move_handle(buildEl, handle_prop, input_pnt, doc):
-    buildEl.change_property(handle_prop, input_pnt)
-    check_equality(handle_prop.handle_id, buildEl)
-    check_Height(buildEl,handle_prop.handle_id)
-    return create_element(buildEl, doc)
-
-def check_equality(handle_id,buildEl):
-    if (handle_id == "BeamHeight"):
-        buildEl.RibHeight.value = buildEl.BeamHeight.value - buildEl.TopShHeight.value - buildEl.BotShLowHeight.value - buildEl.BotShUpHeight.value
-        if (buildEl.HoleHeight.value > buildEl.BeamHeight.value - buildEl.TopShHeight.value - 45.5):
-            buildEl.HoleHeight.value = buildEl.BeamHeight.value - buildEl.TopShHeight.value - 45.5
-
-def check_Height(buildEl,handle_id):
-    if (handle_id == "TopShWidth") or (handle_id == "BotShWidth") or (
-            handle_id == "RibThick"):
-        temp = min(buildEl.TopShWidth.value, buildEl.BotShWidth.value)
-        if (buildEl.RibThick.value >= temp - 100.):
-            buildEl.RibThick.value = temp - 100.
-        if (buildEl.RibThick.value <= buildEl.VaryingRibThick.value):
-            buildEl.VaryingRibThick.value = buildEl.RibThick.value - 20.
-        elif (buildEl.RibThick.value - 100. >= buildEl.VaryingRibThick.value):
-            buildEl.VaryingRibThick.value = buildEl.RibThick.value - 100.
-
-
-def change_property(buildEl, name, value):
-
-    if name == "BeamHeight":
-        change = value - buildEl.TopShHeight.value - buildEl.RibHeight.value - \
-                 buildEl.BotShUpHeight.value - buildEl.BotShLowHeight.value
-        print(change)
-        change_equality(change, buildEl,value)
-    else:
-        Switch(buildEl,name,value)
-
-    return True
-def change_equality(change,buildEl,value):
-    if change < 0:
-        change = abs(change)
-        if buildEl.TopShHeight.value > 320.:
-            if buildEl.TopShHeight.value - change < 320.:
-                change -= buildEl.TopShHeight.value - 320.
-                buildEl.TopShHeight.value = 320.
-            else:
-                buildEl.TopShHeight.value -= change
-                change = 0.
-        if (change != 0) and (buildEl.BotShUpHeight.value > 160.):
-            if buildEl.BotShUpHeight.value - change < 160.:
-                change -= buildEl.BotShUpHeight.value - 160.
-                buildEl.BotShUpHeight.value = 160.
-            else:
-                buildEl.BotShUpHeight.value -= change
-                change = 0.
-        if (change != 0) and (buildEl.BotShLowHeight.value > 153.):
-            if buildEl.BotShLowHeight.value - change < 153.:
-                change -= buildEl.BotShLowHeight.value - 153.
-                buildEl.BotShLowHeight.value = 153.
-            else:
-                buildEl.BotShLowHeight.value -= change
-                change = 0.
-        if (change != 0) and (buildEl.RibHeight.value > 467.):
-            if buildEl.RibHeight.value - change < 467.:
-                change -= buildEl.RibHeight.value - 467.
-                buildEl.RibHeight.value = 467.
-            else:
-                buildEl.RibHeight.value -= change
-                change = 0.
-    else:
-        buildEl.RibHeight.value += change
-    if value - buildEl.TopShHeight.value - 45.5 < buildEl.HoleHeight.value:
-        buildEl.HoleHeight.value = value - buildEl.TopShHeight.value - 45.5
-
-def Switch(buildEl,name,value):
-    if name == "TopShHeight":
-        buildEl.BeamHeight.value = value + buildEl.RibHeight.value + \
-                                     buildEl.BotShUpHeight.value + buildEl.BotShLowHeight.value
-    if name == "RibHeight":
-        buildEl.BeamHeight.value = value + buildEl.TopShHeight.value + \
-                                     buildEl.BotShUpHeight.value + buildEl.BotShLowHeight.value
-    if name == "BotShUpHeight":
-        buildEl.BeamHeight.value = value + buildEl.TopShHeight.value + \
-                                     buildEl.RibHeight.value + buildEl.BotShLowHeight.value
-        if value + buildEl.BotShLowHeight.value + 45.5 > buildEl.HoleHeight.value:
-            buildEl.HoleHeight.value = value + buildEl.BotShLowHeight.value + 45.5
-    if name == "BotShLowHeight":
-        buildEl.BeamHeight.value = value + buildEl.TopShHeight.value + \
-                                     buildEl.RibHeight.value + buildEl.BotShUpHeight.value
-        if buildEl.BotShUpHeight.value + value + 45.5 > buildEl.HoleHeight.value:
-            buildEl.HoleHeight.value = buildEl.BotShUpHeight.value + value + 45.5
-    if name == "HoleHeight":
-        if value > buildEl.BeamHeight.value - buildEl.TopShHeight.value - 45.5:
-            buildEl.HoleHeight.value = buildEl.BeamHeight.value - buildEl.TopShHeight.value - 45.5
-        elif value < buildEl.BotShLowHeight.value + buildEl.BotShUpHeight.value + 45.5:
-            buildEl.HoleHeight.value = buildEl.BotShLowHeight.value + buildEl.BotShUpHeight.value + 45.5
-    if name == "HoleDepth":
-        if value >= buildEl.BeamLength.value / 2.:
-            buildEl.HoleDepth.value = buildEl.BeamLength.value / 2. - 45.5
-
-
-class CreateBridgeBeam():
+class CreateBridge():
     def __init__(self, doc):
 
         self.model_ele_list = []
@@ -238,7 +130,7 @@ class CreateBridgeBeam():
         self.varying_notches(self,buildEl,notch_pol,breps,edges)
         self.siling_holes(self, beam, buildEl, breps)
         self.result(self,beam,com_prop)
-        
+
     def varying_notches(self,buildEl,notch_pol,breps,edges):
         if buildEl.CheckBoxV.value:
             profiles = []
@@ -370,3 +262,111 @@ class CreateBridgeBeam():
             HandleDirection.point_dir, True
         )
         self.handle_list.append(handle5)
+def check_allplan_version(buildEl, version):
+    del buildEl
+    del version
+    return True
+
+
+def create_element(buildEl, doc):
+    element = CreateBridge(doc)
+    return element.create(buildEl)
+
+def move_handle(buildEl, handle_prop, input_pnt, doc):
+    buildEl.change_property(handle_prop, input_pnt)
+    check_equality(handle_prop.handle_id, buildEl)
+    check_Height(buildEl,handle_prop.handle_id)
+    return create_element(buildEl, doc)
+
+def check_equality(handle_id,buildEl):
+    if (handle_id == "BeamHeight"):
+        buildEl.RibHeight.value = buildEl.BeamHeight.value - buildEl.TopShHeight.value - buildEl.BotShLowHeight.value - buildEl.BotShUpHeight.value
+        if (buildEl.HoleHeight.value > buildEl.BeamHeight.value - buildEl.TopShHeight.value - 45.5):
+            buildEl.HoleHeight.value = buildEl.BeamHeight.value - buildEl.TopShHeight.value - 45.5
+
+def check_Height(buildEl,handle_id):
+    if (handle_id == "TopShWidth") or (handle_id == "BotShWidth") or (
+            handle_id == "RibThick"):
+        temp = min(buildEl.TopShWidth.value, buildEl.BotShWidth.value)
+        if (buildEl.RibThick.value >= temp - 100.):
+            buildEl.RibThick.value = temp - 100.
+        if (buildEl.RibThick.value <= buildEl.VaryingRibThick.value):
+            buildEl.VaryingRibThick.value = buildEl.RibThick.value - 20.
+        elif (buildEl.RibThick.value - 100. >= buildEl.VaryingRibThick.value):
+            buildEl.VaryingRibThick.value = buildEl.RibThick.value - 100.
+
+
+def change_property(buildEl, name, value):
+
+    if name == "BeamHeight":
+        change = value - buildEl.TopShHeight.value - buildEl.RibHeight.value - \
+                 buildEl.BotShUpHeight.value - buildEl.BotShLowHeight.value
+        print(change)
+        change_equality(change, buildEl,value)
+    else:
+        Switch(buildEl,name,value)
+
+    return True
+def change_equality(change,buildEl,value):
+    if change < 0:
+        change = abs(change)
+        if buildEl.TopShHeight.value > 320.:
+            if buildEl.TopShHeight.value - change < 320.:
+                change -= buildEl.TopShHeight.value - 320.
+                buildEl.TopShHeight.value = 320.
+            else:
+                buildEl.TopShHeight.value -= change
+                change = 0.
+        if (change != 0) and (buildEl.BotShUpHeight.value > 160.):
+            if buildEl.BotShUpHeight.value - change < 160.:
+                change -= buildEl.BotShUpHeight.value - 160.
+                buildEl.BotShUpHeight.value = 160.
+            else:
+                buildEl.BotShUpHeight.value -= change
+                change = 0.
+        if (change != 0) and (buildEl.BotShLowHeight.value > 153.):
+            if buildEl.BotShLowHeight.value - change < 153.:
+                change -= buildEl.BotShLowHeight.value - 153.
+                buildEl.BotShLowHeight.value = 153.
+            else:
+                buildEl.BotShLowHeight.value -= change
+                change = 0.
+        if (change != 0) and (buildEl.RibHeight.value > 467.):
+            if buildEl.RibHeight.value - change < 467.:
+                change -= buildEl.RibHeight.value - 467.
+                buildEl.RibHeight.value = 467.
+            else:
+                buildEl.RibHeight.value -= change
+                change = 0.
+    else:
+        buildEl.RibHeight.value += change
+    if value - buildEl.TopShHeight.value - 45.5 < buildEl.HoleHeight.value:
+        buildEl.HoleHeight.value = value - buildEl.TopShHeight.value - 45.5
+
+def Switch(buildEl,name,value):
+    if name == "TopShHeight":
+        buildEl.BeamHeight.value = value + buildEl.RibHeight.value + \
+                                     buildEl.BotShUpHeight.value + buildEl.BotShLowHeight.value
+    if name == "RibHeight":
+        buildEl.BeamHeight.value = value + buildEl.TopShHeight.value + \
+                                     buildEl.BotShUpHeight.value + buildEl.BotShLowHeight.value
+    if name == "BotShUpHeight":
+        buildEl.BeamHeight.value = value + buildEl.TopShHeight.value + \
+                                     buildEl.RibHeight.value + buildEl.BotShLowHeight.value
+        if value + buildEl.BotShLowHeight.value + 45.5 > buildEl.HoleHeight.value:
+            buildEl.HoleHeight.value = value + buildEl.BotShLowHeight.value + 45.5
+    if name == "BotShLowHeight":
+        buildEl.BeamHeight.value = value + buildEl.TopShHeight.value + \
+                                     buildEl.RibHeight.value + buildEl.BotShUpHeight.value
+        if buildEl.BotShUpHeight.value + value + 45.5 > buildEl.HoleHeight.value:
+            buildEl.HoleHeight.value = buildEl.BotShUpHeight.value + value + 45.5
+    if name == "HoleHeight":
+        if value > buildEl.BeamHeight.value - buildEl.TopShHeight.value - 45.5:
+            buildEl.HoleHeight.value = buildEl.BeamHeight.value - buildEl.TopShHeight.value - 45.5
+        elif value < buildEl.BotShLowHeight.value + buildEl.BotShUpHeight.value + 45.5:
+            buildEl.HoleHeight.value = buildEl.BotShLowHeight.value + buildEl.BotShUpHeight.value + 45.5
+    if name == "HoleDepth":
+        if value >= buildEl.BeamLength.value / 2.:
+            buildEl.HoleDepth.value = buildEl.BeamLength.value / 2. - 45.5
+
+
