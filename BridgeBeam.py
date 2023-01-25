@@ -18,36 +18,16 @@ class CreateBridge():
         self.document = doc
 
     def create(self, build_El):
-
-        self._topSH_width = build_El.TopShWidth.value
-        self._topSH_height = build_El.TopShHeight.value
-
-        self._botSH_width = build_El.BotShWidth.value
-        self._botSH_up_height = build_El.BotShUpHeight.value
-        self._botSH_low_height = build_El.BotShLowHeight.value
-        self._botSH_height = self._botSH_up_height + self._botSH_low_height
-
-        self._rib_thickness = build_El.RibThick.value
-        self._rib_height = build_El.RibHeight.value
-
-        self._varying_start = build_El.VaryingStart.value
-        self._varying_length = build_El.VaryingLength.value
-        self._varying_end = self._varying_start + self._varying_length
-        self._varying_rib_thickness = build_El.VaryingRibThick.value
-
-        self._beam_length = build_El.BeamLength.value
-        self._beam_width = max(self._topSH_width, self._botSH_width)
-        self._beam_height = build_El.BeamHeight.value
-
-        self._hole_depth = build_El.HoleDepth.value
-        self._hole_height = build_El.HoleHeight.value
-
-        self._angleX = build_El.RotationAngleX.value
-        self._angleY = build_El.RotationAngleY.value
-        self._angleZ = build_El.RotationAngleZ.value
-
-        self.create_beam(build_El)
-        self.create_handles(build_El)
+        self.create_top(self, build_El)
+        self.create_bot(self, build_El)
+        self.create_holeAngle(self, build_El)
+        self.create_rib(self, build_El)
+        self.create_var(self, build_El)
+        self.create_beam(self, build_El)
+        self.create_B(build_El)
+        self.create_handles12(self)
+        self.create_handle34(self)
+        self.create_handle5(self)
 
         AllplanBaseElements.ElementTransform(AllplanGeo.Vector3D(), self._angleX, self._angleY, self._angleZ,
                                              self.model_ele_list)
@@ -56,7 +36,32 @@ class CreateBridge():
         HandleService.transform_handles(self.handle_list, rot_angles.get_rotation_matrix())
 
         return (self.model_ele_list, self.handle_list)
-
+    def create_top(self, build_El):
+        self._topSH_width = build_El.TopShWidth.value
+        self._topSH_height = build_El.TopShHeight.value
+    def create_bot(self, build_El):
+        self._botSH_width = build_El.BotShWidth.value
+        self._botSH_up_height = build_El.BotShUpHeight.value
+        self._botSH_low_height = build_El.BotShLowHeight.value
+        self._botSH_height = self._botSH_up_height + self._botSH_low_height
+    def create_holeAngle(self, build_El):
+        self._hole_depth = build_El.HoleDepth.value
+        self._hole_height = build_El.HoleHeight.value
+        self._angleX = build_El.RotationAngleX.value
+        self._angleY = build_El.RotationAngleY.value
+        self._angleZ = build_El.RotationAngleZ.value
+    def create_rib(self, build_El):
+        self._rib_thickness = build_El.RibThick.value
+        self._rib_height = build_El.RibHeight.value
+    def create_var(self, build_El):
+         self._varying_start = build_El.VaryingStart.value
+         self._varying_length = build_El.VaryingLength.value
+         self._varying_end = self._varying_start + self._varying_length
+         self._varying_rib_thickness = build_El.VaryingRibThick.value
+    def create_beam(self,build_El):
+        self._beam_length = build_El.BeamLength.value
+        self._beam_width = max(self._topSH_width, self._botSH_width)
+        self._beam_height = build_El.BeamHeight.value
     def create_B(self, build_El):
         com_prop = AllplanBaseElements.CommonProperties()
         com_prop.GetGlobalProperties()
