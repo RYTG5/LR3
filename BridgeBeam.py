@@ -16,7 +16,13 @@ class CreateBridge():
         self.model_ele_list = []
         self.handle_list = []
         self.document = doc
-
+        self._topSH_width,_topSH_height = None
+        self._botSH_width,_botSH_up_height,_botSH_low_height,_botSH_height = None
+        self._hole_depth,_hole_height = None
+        self._angleX,_angleY,_angleZ = None
+        self._rib_thickness,_rib_height = None
+        self._varying_start,_varying_length,_varying_end,_varying_rib_thickness = None
+        self._beam_length,_beam_width,_beam_height = None
     def create(self, build_El):
         self.create_top(self, build_El)
         self.create_bot(self, build_El)
